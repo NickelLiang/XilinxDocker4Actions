@@ -9,6 +9,7 @@ FROM ubuntu:22.04 AS installation
 ARG WEB_INSTALLER
 ARG INSTALL_CONFIG
 ARG AUTH_KEY
+ARG VERSION_NUM
 
 COPY ${WEB_INSTALLER} /${WEB_INSTALLER}
 COPY ${INSTALL_CONFIG} /${INSTALL_CONFIG}
@@ -24,6 +25,9 @@ RUN apt-get update && \
     apt-get autoclean && apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
+## Xilinx 2022.1 will include versal support in the following folder regardless of your install config
+## Remove this can save up to ~50G of disk space
+## https://support.xilinx.com/s/question/0D52E00006ln0TnSAI/question-regarding-vivado-20211-installation-size-and-device-support?language=en_US
 RUN /${WEB_INSTALLER} --noexec --target ./installer && \
     cd installer && \
 	./xsetup \
@@ -32,9 +36,9 @@ RUN /${WEB_INSTALLER} --noexec --target ./installer && \
   		--batch INSTALL && \
     cd .. && \
     rm -rf /tools/Xilinx/.xinstall && \
-    ## Xilinx 2022.1 will include versal supoort in the following folder regardless of your install config
-    ## Remove this to save up to ~50G of disk space
-    ## https://support.xilinx.com/s/question/0D52E00006ln0TnSAI/question-regarding-vivado-20211-installation-size-and-device-support?language=en_US
+    rm /${WEB_INSTALLER} && \
+    rm /${INSTALL_CONFIG} && \
+    rm /root/.Xilinx/wi_authentication_key && \
     rm -rf /tools/Xilinx/Vivado/${VERSION_NUM}/data/parts/xilinx/devint/vault/versal
 
 ## Create Vivado Image
